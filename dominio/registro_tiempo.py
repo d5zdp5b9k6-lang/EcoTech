@@ -1,10 +1,12 @@
 class RegistroTiempo:
-    """Registra las horas trabajadas por un empleado en una fecha determinada."""
+    """Clase que registra la jornada u horas trabajadas de un empleado."""
 
-    def __init__(self, fecha: str, horas: float, descripcion: str = ""):
+    def __init__(self, id_registro: int, fecha: str, horas_trabajadas: float, descripcion: str):
+        self.id_registro = id_registro
         self.fecha = fecha
-        self.horas = horas
+        self.horas_trabajadas = horas_trabajadas
         self.descripcion = descripcion
 
-    def __str__(self):
-        return f"Registro({self.fecha}: {self.horas} hrs - {self.descripcion})"
+    def obtener_resumen(self) -> str:
+        """Retorna un resumen del registro de tiempo."""
+        return f"[{self.fecha}] {self.horas_trabajadas} hrs - {self.descripcion}"

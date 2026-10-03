@@ -1,14 +1,17 @@
 class Departamento:
     """Representa un departamento de la empresa EcoTech."""
 
-    def __init__(self, nombre: str):
+    def __init__(self, id_departamento: int, nombre: str):
+        self.id_departamento = id_departamento
         self.nombre = nombre
-        self.empleados = []  # Cardinalidad 0..* (lista de empleados)
+        self.empleados = []
 
     def agregar_empleado(self, empleado):
         """Asigna un empleado a este departamento."""
         self.empleados.append(empleado)
-        empleado.departamento = self  # Relación bidireccional
 
-    def __str__(self):
-        return f"Departamento: {self.nombre} (Total empleados: {len(self.empleados)})"
+    def listar_empleados(self):
+        """Muestra la lista de empleados asociados al departamento."""
+        print(f"--- Empleados en {self.nombre} ---")
+        for emp in self.empleados:
+            print(f"- {emp.nombre} ({emp.cargo})")

@@ -2,3 +2,12 @@
 __pycache__/
 *.pyc
 .env
+
+# Ocultar entorno virtual
+.venv/
+
+# Ocultar secretos y contraseñas
+.env
+
+# Ocultar base de datos local
+*.db

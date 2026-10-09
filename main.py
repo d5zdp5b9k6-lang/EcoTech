@@ -1,49 +1,66 @@
-from dominio.empleado import Empleado
-from dominio.departamento import Departamento
-from dominio.registro_tiempo import RegistroTiempo
+import sqlite3
+import os
+from dotenv import load_dotenv
+from infraestructura.conexion import obtener_conexion
+from infraestructura.repositorio import (
+    insertar_departamento,
+    insertar_empleado,
+    obtener_empleados_con_departamento
+)
 
-def main():
-    print("=== SISTEMA ECOTECH ===")
+load_dotenv()
 
-    # 1. Crear un departamento
-    depto_ti = Departamento(1, "Tecnologías de la Información")
-
-    # 2. Crear un empleado
-    emp1 = Empleado(
-        rut="21.456.789-0",
-        nombre="Javiera Peña",
-        email="javiera.pena@ecotech.cl",
-        telefono="+56912345678",
-        cargo="Desarrolladora Python",
-        sueldo_base=850000.0
-    )
-
-    # 3. Prueba de encapsulamiento con sueldo negativo
-    print("\n--- Prueba de Validación / Encapsulamiento ---")
-    emp2 = Empleado(
-        rut="11.111.111-1",
-        nombre="Carlos Pérez",
-        email="carlos@ecotech.cl",
-        telefono="+56987654321",
-        cargo="Tester QA",
-        sueldo_base=-500000.0
-    )
-    print(f"Sueldo asignado a Carlos: ${emp2.get_sueldo_base()}")
-    print("----------------------------------------------\n")
-
-    # 4. Asignar empleado y registros de tiempo
-    depto_ti.agregar_empleado(emp1)
-
-    reg1 = RegistroTiempo(101, "2026-09-24", 8.0, "Desarrollo de módulos")
-    reg2 = RegistroTiempo(102, "2026-09-25", 7.5, "Pruebas unitarias")
-
-    emp1.agregar_registro_tiempo(reg1)
-    emp1.agregar_registro_tiempo(reg2)
-
-    # 5. Imprimir resultados
-    print(emp1.mostrar_informacion())
-    depto_ti.listar_empleados()
-    print(f"Total de horas registradas por {emp1.nombre}: {emp1.calcular_total_horas()} hrs")
+def inicializar_base_de_datos():
+    # Creamos las tablas con execute directo para evitar la falla de executescript
+    with obtener_conexion() as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS departamentos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nombre TEXT NOT NULL UNIQUE,
+                presupuesto REAL DEFAULT 0.0
+            );
+        """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS empleados (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                rut TEXT NOT NULL UNIQUE,
+                nombre TEXT NOT NULL,
+                email TEXT NOT NULL UNIQUE,
+                sueldo_base REAL NOT NULL,
+                departamento_id INTEGER,
+                FOREIGN KEY (departamento_id) REFERENCES departamentos(id) ON DELETE SET NULL
+            );
+        """)
+    print("¡Base de datos e infraestructura inicializadas correctamente!")
 
 if __name__ == "__main__":
-    main()
+    # 1. Crear las tablas
+    inicializar_base_de_datos()
+
+    # 2. Insertar departamento
+    try:
+        id_ti = insertar_departamento("Tecnologías de la Información", 5000000.0)
+        print(f"¡Departamento TI creado exitosamente con ID: {id_ti}!")
+    except Exception as e:
+        print(f"Aviso departamento: {e}")
+        id_ti = 1
+
+    # 3. Insertar empleado
+    try:
+        id_emp = insertar_empleado(
+            rut="21.456.789-0",
+            nombre="Javiera Peña",
+            email="javiera.pena@ecotech.cl",
+            sueldo_base=950000.0,
+            departamento_id=id_ti
+        )
+        print(f"¡Empleado creado exitosamente con ID: {id_emp}!")
+    except Exception as e:
+        print(f"Aviso empleado: {e}")
+
+    # 4. Listar
+    print("\n--- LISTA DE EMPLEADOS ---")
+    empleados = obtener_empleados_con_departamento()
+    for emp in empleados:
+        print(f"Registro: {emp}")

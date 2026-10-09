@@ -3,7 +3,6 @@ import sqlite3
 from contextlib import contextmanager
 from dotenv import load_dotenv
 
-# Carga las variables del archivo .env
 load_dotenv()
 
 class ErrorDeConexion(Exception):
@@ -12,14 +11,14 @@ class ErrorDeConexion(Exception):
 
 @contextmanager
 def obtener_conexion():
-    ruta_db = os.environ.get("DB_NOMBRE")
-    if not ruta_db:
-        raise ErrorDeConexion("Falta la variable DB_NOMBRE en el archivo .env")
-    
+    nombre_db = os.environ.get("DB_NOMBRE", "ecotech.db")
+    directorio_raiz = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    ruta_absoluta = os.path.join(directorio_raiz, nombre_db)
+
     conn = None
     try:
-        conn = sqlite3.connect(ruta_db)
-        conn.execute("PRAGMA foreign_keys = ON;")  # Activa llaves foráneas
+        conn = sqlite3.connect(ruta_absoluta)
+        conn.execute("PRAGMA foreign_keys = ON;")
         yield conn
         conn.commit()
     except sqlite3.Error as e:
